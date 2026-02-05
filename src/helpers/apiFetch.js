@@ -1,11 +1,22 @@
-const URL = "https://webserver-distribuidora.onrender.com/api";
+const API_URL = "https://webserver-distribuidora.onrender.com/api";
 
-export const getData = async () => {
-  try {
-    const resp = await fetch(URL);
-    const data = await resp.json();
-    return data;
-  } catch (error) {
-    console.error(error);
+export const apiFetch = async (endpoint, options = {}) => {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { "x-token": token }),
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw data;
   }
+
+  return data;
 };
