@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import { buscarClientes } from "../helpers/apiClient";
+import { useNavigate } from "react-router-dom";
 
 const BuscarClientesScreen = ({ onSelectCliente }) => {
   const [termino, setTermino] = useState("");
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleSelectCliente = (cliente) => {
+    console.log("🧾 Cliente seleccionado:", cliente);
+
+    navigate("/buscar-productos", {
+      state: { cliente },
+    });
+  };
 
   useEffect(() => {
     console.log("🟡 useEffect disparado");
@@ -32,7 +43,7 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
           setClientes(data.clientes || []);
           console.log(
             "✅ Clientes seteados en estado:",
-            data.clientes?.length || 0
+            data.clientes?.length || 0,
           );
         }
       } catch (error) {
@@ -74,10 +85,10 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
         {clientes.map((cliente) => (
           <li
             key={cliente._id}
-            onClick={() => onSelectCliente(cliente)}
+            onClick={() => handleSelectCliente(cliente)}
             className="cliente-item"
           >
-            <div className="cliente-nombre">{cliente.nombre}</div>
+            {cliente.nombre}
           </li>
         ))}
       </ul>

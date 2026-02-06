@@ -12,9 +12,11 @@ function App() {
       <NavBarApp />
 
       <Routes>
+        
         <Route path="/login" element={<LoginScreen/>} />
         <Route path="/" element={<HomeScreen />} />
         <Route path="/nueva-venta" element={<BuscarClientesScreen />} />
+        <Route path="/buscar-productos" element={<BuscarProductosScreen />} />
         <Route path="/mis-pedidos" element={<VerMisPedidosScreen />} />
       </Routes>
     </BrowserRouter>
