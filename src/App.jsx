@@ -4,6 +4,7 @@ import BuscarProductosScreen from "./views/BuscarProductosScreen";
 import NavBarApp from "./components/NavBarApp";
 import VerMisPedidosScreen from "./views/VerMisPedidosScreen";
 import LoginScreen from "./views/LoginScreen";
+import BuscarClientesScreen from "./views/BuscarClientesScreen";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginScreen/>} />
         <Route path="/" element={<HomeScreen />} />
-        <Route path="/nueva-venta" element={<BuscarProductosScreen />} />
+        <Route path="/nueva-venta" element={<BuscarClientesScreen />} />
         <Route path="/mis-pedidos" element={<VerMisPedidosScreen />} />
       </Routes>
     </BrowserRouter>

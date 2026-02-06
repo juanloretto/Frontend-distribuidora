@@ -1,3 +1,49 @@
 body {
   padding-top: 56px;
 }
+.buscar-clientes {
+  padding: 16px;
+}
+
+.buscar-clientes h2 {
+  margin-bottom: 12px;
+}
+
+.buscar-clientes input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.loading {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.clientes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cliente-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.cliente-item:active {
+  background-color: #f2f2f2;
+}
+
+.cliente-nombre {
+  font-weight: 600;
+}
+
+.cliente-telefono {
+  font-size: 14px;
+  color: #666;
+}

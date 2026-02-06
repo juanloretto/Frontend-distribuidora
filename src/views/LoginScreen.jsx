@@ -12,16 +12,30 @@ const LoginScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.group("🔐 LOGIN FLOW");
+    console.log("📤 Datos enviados:", { email, password });
+
     try {
-        
       const resp = await login({ email, password });
 
-      // backend típico: { token, usuario }
+      console.log("📥 Respuesta backend:", resp);
+
+      // Guardar token
       localStorage.setItem("token", resp.token);
+      console.log("✅ Token guardado:", resp.token);
+
+      // Guardar usuario
+      localStorage.setItem("usuario", JSON.stringify(resp.usuario));
+      console.log("👤 Usuario guardado:", resp.usuario);
+
+      console.log("➡️ Navegando a Home");
+      console.groupEnd();
 
       navigate("/");
     } catch (err) {
-      setError(err.message);
+      console.error("❌ Error en login:", err);
+      console.groupEnd();
+      setError(err.message || "Error al iniciar sesión");
     }
   };
 
@@ -32,9 +46,7 @@ const LoginScreen = () => {
           <div className="card-body">
             <h3 className="text-center mb-3">Iniciar Sesión</h3>
 
-            {error && (
-              <div className="alert alert-danger">{error}</div>
-            )}
+            {error && <div className="alert alert-danger">{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <input

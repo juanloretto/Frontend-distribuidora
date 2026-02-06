@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
-import { getProductos } from "../helpers/productsApi";
 import SearchBarApp from "../components/SearchBarApp";
+import { getProductos } from "../helpers/productsApi";
 
 const BuscarProductosScreen = () => {
   const [productos, setProductos] = useState([]);
   const [search, setSearch] = useState("");
-
+const [busqueda, setBusqueda] = useState("");
   useEffect(() => {
     getProductos()
       .then((resp) => {
-        setProductos(resp.data); // ajustá según tu backend
+        setProductos(resp.productos || []); // ajustá según tu backend
       })
       .catch(console.error);
   }, []);
-
-  const productosFiltrados = productos.filter(
-    (prod) =>
-      prod.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      prod.codigo?.includes(search)
-  );
+  console.log("📦 productos:", productos);
+  const productosFiltrados =
+    productos?.filter((p) =>
+      p.nombre.toLowerCase().includes(busqueda.toLowerCase()),
+    ) || [];
 
   return (
     <div className="container">
