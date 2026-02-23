@@ -1,7 +1,7 @@
 import { apiFetch } from "./apiFetch";
 
 export const getProductos = () =>
-  apiFetch("/productos");
+  apiFetch("/productos?estado=true");
 
 export const getProductoById = (id) =>
   apiFetch(`/productos/${id}`);
