@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { buscarClientes } from "../helpers/apiClient";
 import { useNavigate } from "react-router-dom";
+import { buscarClientes } from "../helpers/apiClient";
+import { crearCliente } from "../helpers/crearCliente";
+import FormModal from "../components/FormModal";
 
 const BuscarClientesScreen = ({ onSelectCliente }) => {
   const [termino, setTermino] = useState("");
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
 
   const navigate = useNavigate();
 
@@ -15,6 +18,19 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
     navigate("/buscar-productos", {
       state: { cliente },
     });
+  };
+  const handleCrearCliente = async (formData) => {
+    try {
+      const resp = await crearCliente(formData);
+
+      setClientes((prev) => [resp.cliente, ...prev]);
+
+      navigate("/buscar-productos", {
+        state: { cliente: resp.cliente },
+      });
+    } catch (error) {
+      alert(error.message); // ahora sí va a mostrar "Ya existe..."
+    }
   };
 
   useEffect(() => {
@@ -58,6 +74,12 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
     };
 
     buscar();
+    <button
+      className="btn btn-primary w-100 mt-4"
+      onClick={() => setShowNuevoCliente(true)}
+    >
+      + Nuevo Cliente
+    </button>;
 
     return () => {
       console.log("🧹 Cleanup useEffect");
@@ -92,6 +114,12 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
           </li>
         ))}
       </ul>
+      <button
+        className="btn btn-danger w-100 mt-4"
+        onClick={() => setShowNuevoCliente(true)}
+      >
+        + Nuevo Cliente
+      </button>
 
       {/* DEBUG VISUAL */}
       {!loading && termino.length >= 3 && clientes.length === 0 && (
@@ -99,6 +127,11 @@ const BuscarClientesScreen = ({ onSelectCliente }) => {
           ⚠️ No se encontraron clientes para este usuario
         </p>
       )}
+      <FormModal
+        show={showNuevoCliente}
+        onClose={() => setShowNuevoCliente(false)}
+        onSubmit={handleCrearCliente}
+      />
     </div>
   );
 };

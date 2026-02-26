@@ -213,7 +213,7 @@ const token = localStorage.getItem("token");
         <h5>${totalGeneral}</h5>
       </div>
 
-      <button className="btn btn-success w-100 mt-3" onClick={confirmarPedido}>
+      <button className="btn btn-success w-100 mt-3 mb-3" onClick={confirmarPedido}>
         Confirmar Pedido
       </button>
       <ConfirmModal

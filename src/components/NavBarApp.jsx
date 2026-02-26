@@ -49,18 +49,6 @@ const NavBarApp = () => {
             ) : (
               <ul className="navbar-nav flex-grow-1 pe-3">
                 <li className="nav-item">
-                  <Link className="nav-link" to="/">
-                    Productos
-                  </Link>
-                </li>
-
-                <li className="nav-item">
-                  <Link className="nav-link" to="/categorias">
-                    Categorías
-                  </Link>
-                </li>
-
-                <li className="nav-item">
                   <Link className="nav-link" to="/pedidos">
                     Pedidos
                   </Link>

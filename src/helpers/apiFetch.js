@@ -14,7 +14,7 @@ export const apiFetch = async (endpoint, options = {}) => {
   const data = await res.json();
 
   if (!res.ok) {
-    throw data;
+    throw new Error(data.msg || "Error en la petición");
   }
 
   return data;
