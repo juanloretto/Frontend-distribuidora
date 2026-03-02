@@ -1,5 +1,21 @@
+img {
+  max-width: 100%;
+  height: auto;
+}
 body {
   padding-top: 56px;
+}
+*
+html,
+body {
+  max-width: 100vw; /* nunca se pase del ancho de la pantalla */
+  overflow-x: hidden; /* evita scroll horizontal */
+}
+
+img,
+table,
+iframe {
+  max-width: 100%; /* evita que elementos internos rompan layout */
 }
 .buscar-clientes {
   padding: 16px;
@@ -67,4 +83,22 @@ body {
   width: 95%;
   max-width: 450px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-custom {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
 }

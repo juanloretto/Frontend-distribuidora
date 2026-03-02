@@ -4,7 +4,9 @@ import SearchBarApp from "../components/SearchBarApp";
 import { getProductos } from "../helpers/productsApi";
 import ConfirmModal from "../components/ConfirmModal";
 import { crearPedido } from "../helpers/crearPedidoApi";
+
 const STORAGE_KEY = "pedido_en_proceso";
+const PRODUCTOS_POR_PAGINA = 12;
 
 const BuscarProductosScreen = () => {
   const { state } = useLocation();
@@ -14,7 +16,12 @@ const BuscarProductosScreen = () => {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [pedidoProductos, setPedidoProductos] = useState([]);
-const token = localStorage.getItem("token");
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [loading, setLoading] = useState(false);
+
   // 🔄 Cargar pedido guardado
   useEffect(() => {
     const guardado = localStorage.getItem(STORAGE_KEY);
@@ -28,27 +35,43 @@ const token = localStorage.getItem("token");
     localStorage.setItem(STORAGE_KEY, JSON.stringify(pedidoProductos));
   }, [pedidoProductos]);
 
+  // 🔄 Resetear página cuando cambia búsqueda
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda]);
+
+  // 🚀 Cargar productos desde backend paginados
   useEffect(() => {
     if (!cliente) {
       navigate("/nueva-venta");
       return;
     }
 
-    getProductos()
-      .then((resp) => {
+    const cargarProductos = async () => {
+      try {
+        setLoading(true);
+
+        const resp = await getProductos({
+          pagina: paginaActual,
+          limite: PRODUCTOS_POR_PAGINA,
+          termino: busqueda,
+        });
+
         setProductos(resp.productos || []);
-      })
-      .catch(console.error);
-  }, [cliente, navigate]);
+        setTotalPaginas(resp.totalPaginas || 1);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarProductos();
+  }, [cliente, paginaActual, busqueda, navigate]);
 
   if (!cliente) return null;
-  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
-  const productosFiltrados =
-    productos?.filter((p) =>
-      p.nombre.toLowerCase().includes(busqueda.toLowerCase()),
-    ) || [];
 
-  // 🔄 Cambiar cantidad con validación de stock
+  // 🔄 Cambiar cantidad
   const cambiarCantidad = (producto, cantidad) => {
     const cantidadNum = Number(cantidad);
 
@@ -90,50 +113,41 @@ const token = localStorage.getItem("token");
     return item ? item.cantidad : 0;
   };
 
-  // 💰 Total general
   const totalGeneral = pedidoProductos.reduce(
     (acc, item) => acc + item.precio * item.cantidad,
     0,
   );
 
-  // ✅ Confirmar pedido
-  // 👉 Se ejecuta cuando el usuario aprieta el botón
   const confirmarPedido = () => {
     if (pedidoProductos.length === 0) {
       alert("Agregá al menos un producto");
       return;
     }
-
     setMostrarConfirmacion(true);
   };
 
   const confirmarPedidoReal = async () => {
     try {
-      if (pedidoProductos.length === 0) {
-        alert("Agregá al menos un producto");
-        return;
-      }
-
       const pedidoFinal = {
         clienteId: cliente._id,
         items: pedidoProductos.map((p) => ({
           productoId: p.productoId,
           cantidad: p.cantidad,
         })),
-        observaciones: "", // después podés hacerlo input
+        observaciones: "",
       };
 
-      await crearPedido(pedidoFinal, token); // tu token del auth
+      await crearPedido(pedidoFinal);
 
       localStorage.removeItem(STORAGE_KEY);
       setMostrarConfirmacion(false);
-
       alert("Pedido creado correctamente");
       navigate("/");
     } catch (error) {
       alert(error.message);
     }
   };
+
   return (
     <div className="container">
       <div className="row text-center mt-4 mb-3">
@@ -149,41 +163,71 @@ const token = localStorage.getItem("token");
         <SearchBarApp placeholder="Buscar producto..." onSearch={setBusqueda} />
       </div>
 
-      {/* 🛍️ Cards */}
+      {/* 🛍️ Productos */}
       <div className="row">
-        {productosFiltrados.map((prod) => (
-          <div key={prod._id} className="col-6 col-md-3 mb-4">
-            <div className="card h-100 shadow-sm">
-              <img
-                src={prod.imagen || "/placeholder.png"}
-                alt={prod.nombre}
-                className="card-img-top"
-                style={{ height: 140, objectFit: "cover" }}
-              />
+        {loading ? (
+          <p className="text-center">Cargando productos...</p>
+        ) : productos.length === 0 ? (
+          <p className="text-center text-muted">No se encontraron productos</p>
+        ) : (
+          productos.map((prod) => (
+            <div key={prod._id} className="col-6 col-md-3 mb-4">
+              <div className="card h-100 shadow-sm">
+                <img
+                  src={prod.img || "/placeholder.png"} // ⚡ usar "img"
+                  alt={prod.nombre}
+                  className="card-img-top"
+                  style={{ height: 140, objectFit: "cover" }}
+                />
 
-              <div className="card-body d-flex flex-column">
-                <h6 className="card-title">{prod.nombre}</h6>
+                <div className="card-body d-flex flex-column">
+                  <h6 className="card-title">{prod.nombre}</h6>
+                  <small className="text-muted">${prod.precio || 0}</small>
 
-                <small className="text-muted">${prod.precio || 0}</small>
+                  {prod.stock && (
+                    <small className="text-muted">Stock: {prod.stock}</small>
+                  )}
 
-                {prod.stock && (
-                  <small className="text-muted">Stock: {prod.stock}</small>
-                )}
-
-                <div className="mt-auto">
-                  <input
-                    type="number"
-                    min="0"
-                    value={obtenerCantidad(prod._id)}
-                    onChange={(e) => cambiarCantidad(prod, e.target.value)}
-                    className="form-control form-control-sm mt-2"
-                  />
+                  <div className="mt-auto">
+                    <input
+                      type="number"
+                      min="0"
+                      value={obtenerCantidad(prod._id)}
+                      onChange={(e) => cambiarCantidad(prod, e.target.value)}
+                      className="form-control form-control-sm mt-2"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+
+      {/* 🔢 Paginación MOBILE-FIRST */}
+      {totalPaginas > 1 && (
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            disabled={paginaActual === 1}
+            onClick={() => setPaginaActual((prev) => prev - 1)}
+          >
+            ◀
+          </button>
+
+          <span className="fw-bold">
+            Página {paginaActual} de {totalPaginas}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            disabled={paginaActual === totalPaginas}
+            onClick={() => setPaginaActual((prev) => prev + 1)}
+          >
+            ▶
+          </button>
+        </div>
+      )}
 
       <hr className="my-4" />
 
@@ -213,9 +257,13 @@ const token = localStorage.getItem("token");
         <h5>${totalGeneral}</h5>
       </div>
 
-      <button className="btn btn-success w-100 mt-3 mb-3" onClick={confirmarPedido}>
+      <button
+        className="btn btn-success w-100 mt-3 mb-3"
+        onClick={confirmarPedido}
+      >
         Confirmar Pedido
       </button>
+
       <ConfirmModal
         show={mostrarConfirmacion}
         title="Confirmar Pedido"
