@@ -1,0 +1,161 @@
+/* ===== VARIABLES ===== */
+:root {
+  --color-danger: #e53935;
+  --color-danger-dark: #c62828;
+  --color-black: #111111;
+  --color-dark: #1c1c1c;
+  --color-gray: #777;
+  --color-light-gray: #f4f4f4;
+  --color-white: #ffffff;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.mis-pedidos-container {
+  min-height: 100vh;
+  background-color: var(--color-black);
+  padding: 20px;
+  color: var(--color-white);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ===== TITULO ===== */
+.mis-pedidos-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* ===== BUSCADOR ===== */
+.mis-pedidos-search {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 20px;
+  background-color: var(--color-dark);
+  color: var(--color-white);
+  font-size: 0.95rem;
+}
+
+.mis-pedidos-search::placeholder {
+  color: var(--color-gray);
+}
+
+/* ===== CARD PEDIDO ===== */
+.pedido-card {
+  background-color: var(--color-dark);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.pedido-card:hover {
+  transform: translateY(-2px);
+}
+
+/* HEADER CARD */
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pedido-cliente {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* BADGES ESTADO */
+.estado-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.estado-pendiente {
+  background-color: rgba(229, 57, 53, 0.2);
+  color: var(--color-danger);
+}
+
+.estado-facturado {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.estado-entregado {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-gray);
+}
+
+.estado-cancelado {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+/* FECHA */
+.pedido-fecha {
+  font-size: 0.8rem;
+  color: var(--color-gray);
+  margin-top: 5px;
+}
+
+/* BOTON CANCELAR */
+.btn-cancelar {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: var(--color-danger);
+  color: var(--color-white);
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancelar:hover {
+  background-color: var(--color-danger-dark);
+}
+
+/* ===== PAGINACION ===== */
+.paginacion {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paginacion button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--color-dark);
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.paginacion button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginacion span {
+  font-size: 0.85rem;
+}
+
+/* ===== DESKTOP ===== */
+@media (min-width: 768px) {
+  .mis-pedidos-container {
+    max-width: 700px;
+    margin: auto;
+  }
+
+  .mis-pedidos-title {
+    font-size: 2rem;
+  }
+}

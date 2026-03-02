@@ -1,0 +1,49 @@
+/* Fondo general gris claro */
+.admin-container {
+  background-color: #f4f6f9;
+  min-height: 100vh;
+  max-height: 100vh;
+  padding: 20px;
+  
+}
+
+/* Subnav contenedor full width */
+.admin-subnav-wrapper {
+  width: 100%;
+  background-color: #212529; /* dark */
+  padding: 10px 0;
+}
+
+/* Centrar contenido interno */
+.admin-subnav {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Links base */
+.admin-subnav .nav-link {
+  color: #ffffff;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  padding: 8px 16px;
+}
+
+/* Hover */
+.admin-subnav .nav-link:hover {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+/* Link activo */
+.admin-subnav .nav-link.active {
+  background-color: #dc3545; /* danger */
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Contenido interno */
+.admin-content {
+  max-width: 1400px;
+  margin: 30px auto 0 auto;
+}
