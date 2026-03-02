@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMisPedidos, cancelarPedidoById } from "../helpers/misPedidosApi";
-import "./MisPedidos.css";
+import "./misPedidos.css";
 const MisPedidosScreen = () => {
   const [pedidos, setPedidos] = useState([]);
   const [search, setSearch] = useState("");
