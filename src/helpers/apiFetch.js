@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://webserver-distribuidora.onrender.com/api";
 
 export const apiFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
