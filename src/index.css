@@ -102,3 +102,13 @@ iframe {
   border-radius: 8px;
   width: 400px;
 }
+.login-logo {
+  width: 70%;
+  max-width: 280px;
+  height: auto;
+  margin-bottom: 50px;
+}
+html, body {
+  height: 100%;
+  margin: 0;
+}

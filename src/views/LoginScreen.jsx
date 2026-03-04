@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login } from "../helpers/authApi";
 import { useNavigate } from "react-router-dom";
-
+import Logo from "../assets/images/LOGOHOME.png";
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,11 +40,17 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="container vh-100 d-flex align-items-center justify-content-center">
-      <div className="col-12 col-md-4">
-        <div className="card shadow">
-          <div className="card-body">
-            <h3 className="text-center mb-3">Iniciar Sesión</h3>
+    <div className="container-fluid vh-100 d-flex align-items-top justify-content-center">
+      <div className="col-12 col-sm-10 col-md-6 col-lg-4">
+        {/* Logo */}
+        <div className="text-center mb-4">
+          <img src={Logo} alt="LOGO GFP" className="img-fluid login-logo" />
+        </div>
+
+        {/* Card */}
+        <div className="card shadow-lg border-0">
+          <div className="card-body p-4">
+            <h3 className="text-center mb-4">Iniciar Sesión</h3>
 
             {error && <div className="alert alert-danger">{error}</div>}
 
@@ -65,9 +71,7 @@ const LoginScreen = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
-              <button className="btn btn-primary w-100">
-                Entrar
-              </button>
+              <button className="btn btn-primary w-100">Entrar</button>
             </form>
           </div>
         </div>
