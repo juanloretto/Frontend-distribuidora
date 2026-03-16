@@ -2,15 +2,20 @@ import { useState } from "react";
 import { login } from "../helpers/authApi";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/LOGOHOME.png";
+
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError(null);
+    setLoading(true);
 
     console.group("🔐 LOGIN FLOW");
     console.log("📤 Datos enviados:", { email, password });
@@ -36,6 +41,8 @@ const LoginScreen = () => {
       console.error("❌ Error en login:", err);
       console.groupEnd();
       setError(err.message || "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,6 +68,7 @@ const LoginScreen = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
 
               <input
@@ -69,9 +77,26 @@ const LoginScreen = () => {
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
 
-              <button className="btn btn-primary w-100">Entrar</button>
+              <button
+                className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Ingresando...
+                  </>
+                ) : (
+                  "Entrar"
+                )}
+              </button>
             </form>
           </div>
         </div>

@@ -8,6 +8,9 @@ import { crearPedido } from "../helpers/crearPedidoApi";
 const STORAGE_KEY = "pedido_en_proceso";
 const PRODUCTOS_POR_PAGINA = 12;
 
+const redondear2 = (numero) => Number(Number(numero || 0).toFixed(2));
+const formatearPrecio = (numero) => redondear2(numero).toFixed(2);
+
 const BuscarProductosScreen = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -22,7 +25,6 @@ const BuscarProductosScreen = () => {
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // 🔄 Cargar pedido guardado
   useEffect(() => {
     const guardado = localStorage.getItem(STORAGE_KEY);
     if (guardado) {
@@ -30,17 +32,14 @@ const BuscarProductosScreen = () => {
     }
   }, []);
 
-  // 🔄 Guardar pedido automáticamente
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(pedidoProductos));
   }, [pedidoProductos]);
 
-  // 🔄 Resetear página cuando cambia búsqueda
   useEffect(() => {
     setPaginaActual(1);
   }, [busqueda]);
 
-  // 🚀 Cargar productos desde backend paginados
   useEffect(() => {
     if (!cliente) {
       navigate("/nueva-venta");
@@ -57,6 +56,8 @@ const BuscarProductosScreen = () => {
           termino: busqueda,
         });
 
+        console.log("PRIMER PRODUCTO:", resp.productos?.[0]);
+
         setProductos(resp.productos || []);
         setTotalPaginas(resp.totalPaginas || 1);
       } catch (error) {
@@ -71,7 +72,72 @@ const BuscarProductosScreen = () => {
 
   if (!cliente) return null;
 
-  // 🔄 Cambiar cantidad
+  const obtenerListasProducto = (producto) => {
+    if (
+      Array.isArray(producto.listasPrecios) &&
+      producto.listasPrecios.length > 0
+    ) {
+      return producto.listasPrecios.map((lista) => ({
+        ...lista,
+        precio: redondear2(lista.precio),
+      }));
+    }
+
+    return [{ nombre: "Lista1", precio: redondear2(producto.precio || 0) }];
+  };
+
+  const obtenerItemPedido = (productoId) => {
+    return pedidoProductos.find((p) => p.productoId === productoId);
+  };
+
+  const obtenerCantidad = (productoId) => {
+    const item = obtenerItemPedido(productoId);
+    return item ? item.cantidad : 0;
+  };
+
+  const obtenerListaSeleccionada = (producto) => {
+    const item = obtenerItemPedido(producto._id);
+
+    if (item?.lista) return item.lista;
+
+    const listas = obtenerListasProducto(producto);
+    return listas[0]?.nombre || "";
+  };
+
+  const cambiarLista = (producto, nuevaLista) => {
+    const listas = obtenerListasProducto(producto);
+    const listaElegida = listas.find((l) => l.nombre === nuevaLista);
+
+    if (!listaElegida) return;
+
+    const existe = pedidoProductos.find((p) => p.productoId === producto._id);
+
+    if (existe) {
+      setPedidoProductos(
+        pedidoProductos.map((p) =>
+          p.productoId === producto._id
+            ? {
+                ...p,
+                lista: listaElegida.nombre,
+                precioUnitario: redondear2(listaElegida.precio),
+              }
+            : p,
+        ),
+      );
+    } else {
+      setPedidoProductos([
+        ...pedidoProductos,
+        {
+          productoId: producto._id,
+          nombre: producto.nombre,
+          lista: listaElegida.nombre,
+          precioUnitario: redondear2(listaElegida.precio),
+          cantidad: 1,
+        },
+      ]);
+    }
+  };
+
   const cambiarCantidad = (producto, cantidad) => {
     const cantidadNum = Number(cantidad);
 
@@ -82,12 +148,8 @@ const BuscarProductosScreen = () => {
       return;
     }
 
-    if (producto.stock && cantidadNum > producto.stock) {
-      alert("Stock insuficiente");
-      return;
-    }
-
     const existe = pedidoProductos.find((p) => p.productoId === producto._id);
+    const listas = obtenerListasProducto(producto);
 
     if (existe) {
       setPedidoProductos(
@@ -101,21 +163,19 @@ const BuscarProductosScreen = () => {
         {
           productoId: producto._id,
           nombre: producto.nombre,
-          precio: producto.precio || 0,
+          lista: listas[0]?.nombre || "Lista1",
+          precioUnitario: redondear2(listas[0]?.precio || producto.precio || 0),
           cantidad: cantidadNum,
         },
       ]);
     }
   };
 
-  const obtenerCantidad = (productoId) => {
-    const item = pedidoProductos.find((p) => p.productoId === productoId);
-    return item ? item.cantidad : 0;
-  };
-
-  const totalGeneral = pedidoProductos.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
-    0,
+  const totalGeneral = redondear2(
+    pedidoProductos.reduce(
+      (acc, item) => acc + redondear2(item.precioUnitario) * item.cantidad,
+      0,
+    ),
   );
 
   const confirmarPedido = () => {
@@ -133,6 +193,7 @@ const BuscarProductosScreen = () => {
         items: pedidoProductos.map((p) => ({
           productoId: p.productoId,
           cantidad: p.cantidad,
+          lista: p.lista,
         })),
         observaciones: "",
       };
@@ -163,48 +224,83 @@ const BuscarProductosScreen = () => {
         <SearchBarApp placeholder="Buscar producto..." onSearch={setBusqueda} />
       </div>
 
-      {/* 🛍️ Productos */}
       <div className="row">
         {loading ? (
           <p className="text-center">Cargando productos...</p>
         ) : productos.length === 0 ? (
           <p className="text-center text-muted">No se encontraron productos</p>
         ) : (
-          productos.map((prod) => (
-            <div key={prod._id} className="col-6 col-md-3 mb-4">
-              <div className="card h-100 shadow-sm">
-                <img
-                  src={prod.img || "/placeholder.png"} // ⚡ usar "img"
-                  alt={prod.nombre}
-                  className="card-img-top"
-                  style={{ height: 140, objectFit: "cover" }}
-                />
+          productos.map((prod) => {
+            const listas = obtenerListasProducto(prod);
 
-                <div className="card-body d-flex flex-column">
-                  <h6 className="card-title">{prod.nombre}</h6>
-                  <small className="text-muted">${prod.precio || 0}</small>
+            return (
+              <div
+                key={prod._id}
+                className="col-12 col-sm-6 col-md-4 col-lg-3 mb-3"
+              >
+                <div className="card h-100 shadow-sm">
+                  <img
+                    src={prod.img || "/placeholder.png"}
+                    alt={prod.nombre}
+                    className="card-img-top"
+                    style={{ height: 140, objectFit: "cover" }}
+                  />
 
-                  {prod.stock && (
-                    <small className="text-muted">Stock: {prod.stock}</small>
-                  )}
+                  <div className="card-body d-flex flex-column p-2">
+                    <h6
+                      className="card-title mb-1"
+                      style={{
+                        fontSize: "0.9rem",
+                        lineHeight: "1.2",
+                        minHeight: "2.2rem",
+                      }}
+                    >
+                      {prod.nombre}
+                    </h6>
 
-                  <div className="mt-auto">
-                    <input
-                      type="number"
-                      min="0"
-                      value={obtenerCantidad(prod._id)}
-                      onChange={(e) => cambiarCantidad(prod, e.target.value)}
-                      className="form-control form-control-sm mt-2"
-                    />
+                    <small className="text-muted d-block mb-2">
+                      Base: $
+                      {formatearPrecio(listas[0]?.precio || prod.precio || 0)}
+                    </small>
+
+                    <div className="mb-2">
+                      <label className="form-label mb-1 small fw-semibold">
+                        Lista
+                      </label>
+                      <select
+                        className="form-select form-select-sm"
+                        value={obtenerListaSeleccionada(prod)}
+                        onChange={(e) => cambiarLista(prod, e.target.value)}
+                      >
+                        {listas.map((lista) => (
+                          <option key={lista.nombre} value={lista.nombre}>
+                            {lista.nombre} - ${formatearPrecio(lista.precio)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mt-auto">
+                      <label className="form-label mb-1 small fw-semibold">
+                        Cantidad
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={obtenerCantidad(prod._id)}
+                        onChange={(e) => cambiarCantidad(prod, e.target.value)}
+                        className="form-control form-control-sm"
+                        inputMode="numeric"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      {/* 🔢 Paginación MOBILE-FIRST */}
       {totalPaginas > 1 && (
         <div className="d-flex justify-content-between align-items-center mb-4">
           <button
@@ -231,30 +327,33 @@ const BuscarProductosScreen = () => {
 
       <hr className="my-4" />
 
-      {/* 🧾 Resumen */}
       <h4>Resumen del pedido</h4>
 
       {pedidoProductos.length === 0 && (
         <p className="text-muted">No hay productos seleccionados</p>
       )}
 
-      {pedidoProductos.map((item) => (
-        <div
-          key={item.productoId}
-          className="d-flex justify-content-between mb-2"
-        >
-          <span>
-            {item.nombre} x {item.cantidad}
-          </span>
-          <strong>${item.precio * item.cantidad}</strong>
-        </div>
-      ))}
+      {pedidoProductos.map((item) => {
+        const subtotal = redondear2(item.precioUnitario * item.cantidad);
+
+        return (
+          <div
+            key={item.productoId}
+            className="d-flex justify-content-between mb-2"
+          >
+            <span>
+              {item.nombre} x {item.cantidad} ({item.lista})
+            </span>
+            <strong>${formatearPrecio(subtotal)}</strong>
+          </div>
+        );
+      })}
 
       <hr />
 
       <div className="d-flex justify-content-between">
         <h5>Total</h5>
-        <h5>${totalGeneral}</h5>
+        <h5>${formatearPrecio(totalGeneral)}</h5>
       </div>
 
       <button
@@ -272,22 +371,26 @@ const BuscarProductosScreen = () => {
         onCancel={() => setMostrarConfirmacion(false)}
       >
         <div>
-          {pedidoProductos.map((item) => (
-            <div
-              key={item.productoId}
-              className="d-flex justify-content-between"
-            >
-              <span>
-                {item.nombre} x {item.cantidad}
-              </span>
-              <strong>${item.precio * item.cantidad}</strong>
-            </div>
-          ))}
+          {pedidoProductos.map((item) => {
+            const subtotal = redondear2(item.precioUnitario * item.cantidad);
+
+            return (
+              <div
+                key={item.productoId}
+                className="d-flex justify-content-between"
+              >
+                <span>
+                  {item.nombre} x {item.cantidad} ({item.lista})
+                </span>
+                <strong>${formatearPrecio(subtotal)}</strong>
+              </div>
+            );
+          })}
 
           <hr />
           <div className="d-flex justify-content-between">
             <strong>Total</strong>
-            <strong>${totalGeneral}</strong>
+            <strong>${formatearPrecio(totalGeneral)}</strong>
           </div>
         </div>
       </ConfirmModal>
